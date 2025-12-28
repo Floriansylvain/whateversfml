@@ -4,10 +4,18 @@
 #include <SFML/System/Vector2.hpp>
 
 Walls::Walls() : walls(sf::PrimitiveType::Lines) {
-  add({1.f, 1.f}, {WIDTH - 1.f, 1.f});
-  add({1.f, 1.f}, {1.f, HEIGHT - 1.f});
-  add({WIDTH - 1.f, 1.f}, {WIDTH - 1.f, HEIGHT - 1.f});
-  add({1.f, HEIGHT - 1.f}, {WIDTH - 1.f, HEIGHT - 1.f});
+  constexpr int dWidth = WIDTH * 2;
+  constexpr int dHeight = HEIGHT * 2;
+
+  constexpr sf::Vector2f topLeft = {-WIDTH, -HEIGHT};
+  constexpr sf::Vector2f topRight = {dWidth, -HEIGHT};
+  constexpr sf::Vector2f bottomLeft = {-WIDTH, dHeight};
+  constexpr sf::Vector2f bottomRight = {dWidth, dHeight};
+
+  add(topLeft, topRight);
+  add(topLeft, bottomLeft);
+  add(topRight, bottomRight);
+  add(bottomLeft, bottomRight);
 
   add({1000.f, 500.f}, {1500.f, 500.f});
   add({500.f, 240.f}, {500.f, 760.f});

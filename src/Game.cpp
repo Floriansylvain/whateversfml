@@ -111,25 +111,25 @@ void Game::update(double dt) {
   player.update(dt, window, worldView);
 
   // INIT/UPDATE RAYS ------------------------------------------
-  auto mousePos = sf::Mouse::getPosition(window);
-  auto mousePosWorld = window.mapPixelToCoords(mousePos, worldView);
-
+  sf::Vector2 playerPosition = player.position;
   rayVertices.clear();
   hitPoints.clear();
 
   for (sf::Vector2 targetPoint : walls.getPoints()) {
-    hitPoints.emplace_back(updateRay(mousePosWorld, targetPoint, 0.f));
-    hitPoints.emplace_back(updateRay(mousePosWorld, targetPoint, 0.001f));
-    hitPoints.emplace_back(updateRay(mousePosWorld, targetPoint, -0.001f));
+    hitPoints.emplace_back(updateRay(playerPosition, targetPoint, 0.f));
+    hitPoints.emplace_back(updateRay(playerPosition, targetPoint, 0.001f));
+    hitPoints.emplace_back(updateRay(playerPosition, targetPoint, -0.001f));
   }
   std::sort(hitPoints.begin(), hitPoints.end(),
-            [mousePosWorld](sf::Vector2f a, sf::Vector2f b) -> bool {
-              auto angleA = atan2(mousePosWorld.y - a.y, mousePosWorld.x - a.x);
-              auto angleB = atan2(mousePosWorld.y - b.y, mousePosWorld.x - b.x);
+            [playerPosition](sf::Vector2f a, sf::Vector2f b) -> bool {
+              auto angleA =
+                  atan2(playerPosition.y - a.y, playerPosition.x - a.x);
+              auto angleB =
+                  atan2(playerPosition.y - b.y, playerPosition.x - b.x);
               return angleA < angleB;
             });
 
-  rayVertices.append({mousePosWorld, lightColor});
+  rayVertices.append({playerPosition, lightColor});
   for (auto hitPoint : hitPoints) {
     rayVertices.append({hitPoint, lightColor});
   }

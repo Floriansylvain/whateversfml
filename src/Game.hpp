@@ -12,7 +12,7 @@
 #include "Player.hpp"
 #include "Walls.hpp"
 
-constexpr bool VSYNC = false;
+constexpr bool VSYNC = true;
 constexpr int WIDTH = 1920;
 constexpr int HEIGHT = 1080;
 constexpr int DEBUG_REFRESH_RATE_IN_MS = 250;
