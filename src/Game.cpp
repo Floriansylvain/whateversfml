@@ -1,10 +1,11 @@
 #include "Game.hpp"
 #include "Lighting.hpp"
+#include "World.hpp"
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Window/Mouse.hpp>
 
-Game::Game() : gridLines(WIDTH, HEIGHT, 20.f), player(15.f, sf::Color::Green) {
+Game::Game() {
   window.create(sf::VideoMode({WIDTH, HEIGHT}), "SFML Game");
   window.setVerticalSyncEnabled(VSYNC);
 
@@ -58,19 +59,17 @@ void Game::processEvents() {
 
 void Game::update(double dt) {
   debug.update(dt);
-  player.update(dt, window, worldView);
-  lighting.update(dt, player.position, walls);
+  world.update(dt, window, worldView);
+  lighting.update(dt, world.player.position, world.walls);
 };
 
 void Game::render() {
   window.clear();
   window.setView(worldView);
 
-  gridLines.render(window);
-  debug.render(window);
-  player.render(window);
-  walls.render(window);
+  world.render(window);
   lighting.render(window);
+  debug.render(window);
 
   window.display();
 };

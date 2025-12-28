@@ -8,10 +8,8 @@
 #include <SFML/System/Vector2.hpp>
 
 #include "DebugUI.hpp"
-#include "GridLines.hpp"
 #include "Lighting.hpp"
-#include "Player.hpp"
-#include "Walls.hpp"
+#include "World.hpp"
 
 constexpr bool VSYNC = true;
 constexpr int WIDTH = 1920;
@@ -28,10 +26,8 @@ private:
   sf::RenderWindow window;
   sf::View worldView;
 
-  Player player;
+  World world;
   DebugUI debug;
-  GridLines gridLines;
-  Walls walls;
   Lighting lighting;
 
   void onResize();
