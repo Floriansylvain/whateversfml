@@ -2,11 +2,12 @@
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Window/Mouse.hpp>
+#include <algorithm>
 #include <cmath>
 
 Game::Game()
     : gridLines(WIDTH, HEIGHT, 20.f), player(15.f, sf::Color::Green),
-      rayVertices(sf::PrimitiveType::Lines) {
+      rayVertices(sf::PrimitiveType::TriangleFan) {
   window.create(sf::VideoMode({WIDTH, HEIGHT}), "SFML Game");
   window.setVerticalSyncEnabled(VSYNC);
 
@@ -16,6 +17,8 @@ Game::Game()
 
   worldView.setSize({(float)WIDTH, (float)HEIGHT});
   worldView.setCenter({(float)WIDTH / 2.f, (float)HEIGHT / 2.f});
+
+  lightColor = sf::Color(255, 255, 150, 50);
 }
 
 void Game::run() {
@@ -64,7 +67,7 @@ float Game::intersects(Ray ray, Wall wall) {
       (ray.direction.x * wallVector.y) - (ray.direction.y * wallVector.x);
 
   if (determinator == 0)
-    return false;
+    return INFINITY;
 
   auto rayDist = ((wall.start.x - ray.origin.x) * wallVector.y -
                   (wall.start.y - ray.origin.y) * wallVector.x);
@@ -81,34 +84,57 @@ float Game::intersects(Ray ray, Wall wall) {
   return INFINITY;
 };
 
+sf::Vector2f Game::updateRay(sf::Vector2f &origin, sf::Vector2f &targetPoint,
+                             float offset) {
+  auto closestDist = 1.0f;
+  auto maxDist = 3000.0f;
+
+  float angle =
+      std::atan2(targetPoint.y - origin.y, targetPoint.x - origin.x) + offset;
+
+  sf::Vector2f direction = {std::cos(angle) * maxDist,
+                            std::sin(angle) * maxDist};
+  Ray ray = {origin, direction};
+
+  for (Wall wall : walls.get()) {
+    auto rayDist = intersects(ray, wall);
+    if (rayDist < closestDist) {
+      closestDist = rayDist;
+    };
+  }
+
+  return ray.origin + (ray.direction * closestDist);
+}
+
 void Game::update(double dt) {
   debug.update(dt);
   player.update(dt, window, worldView);
 
-  // INIT/UPDATE RAYS -------
+  // INIT/UPDATE RAYS ------------------------------------------
   auto mousePos = sf::Mouse::getPosition(window);
   auto mousePosWorld = window.mapPixelToCoords(mousePos, worldView);
 
   rayVertices.clear();
+  hitPoints.clear();
+
   for (sf::Vector2 targetPoint : walls.getPoints()) {
-    auto ray = Ray(mousePosWorld, targetPoint);
-    auto closestDist = 1.0f;
-
-    for (Wall wall : walls.get()) {
-      auto rayDist = intersects(ray, wall);
-      if (rayDist < closestDist) {
-        closestDist = rayDist;
-      };
-    }
-
-    sf::Vector2f hitPoint = ray.origin + (ray.direction * closestDist);
-
-    rayVertices.append({ray.origin, sf::Color::Blue});
-    rayVertices.append({hitPoint, sf::Color::Blue});
+    hitPoints.emplace_back(updateRay(mousePosWorld, targetPoint, 0.f));
+    hitPoints.emplace_back(updateRay(mousePosWorld, targetPoint, 0.001f));
+    hitPoints.emplace_back(updateRay(mousePosWorld, targetPoint, -0.001f));
   }
+  std::sort(hitPoints.begin(), hitPoints.end(),
+            [mousePosWorld](sf::Vector2f a, sf::Vector2f b) -> bool {
+              auto angleA = atan2(mousePosWorld.y - a.y, mousePosWorld.x - a.x);
+              auto angleB = atan2(mousePosWorld.y - b.y, mousePosWorld.x - b.x);
+              return angleA < angleB;
+            });
 
-  // TODO: implement 3-rays trick to have softer angles
-  // -----------------
+  rayVertices.append({mousePosWorld, lightColor});
+  for (auto hitPoint : hitPoints) {
+    rayVertices.append({hitPoint, lightColor});
+  }
+  rayVertices.append({hitPoints[0], lightColor});
+  // -----------------------------------------------------------
 };
 
 void Game::render() {

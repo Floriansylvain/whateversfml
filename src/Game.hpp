@@ -12,7 +12,7 @@
 #include "Player.hpp"
 #include "Walls.hpp"
 
-constexpr bool VSYNC = true;
+constexpr bool VSYNC = false;
 constexpr int WIDTH = 1920;
 constexpr int HEIGHT = 1080;
 constexpr int DEBUG_REFRESH_RATE_IN_MS = 250;
@@ -21,15 +21,6 @@ constexpr float ASPECT = 16.f / 9.f;
 struct Ray {
   sf::Vector2f origin;
   sf::Vector2f direction;
-  float angle;
-
-  Ray(sf::Vector2f origin, sf::Vector2f target) {
-    this->origin = origin;
-    this->direction = target - origin;
-    angle = direction.angleTo(origin).asDegrees();
-  };
-
-  Ray(float angle, float length) {}; // TODO
 };
 
 class Game {
@@ -47,8 +38,12 @@ private:
   Walls walls;
 
   sf::VertexArray rayVertices;
+  std::vector<sf::Vector2f> hitPoints;
+  sf::Color lightColor;
 
   float intersects(Ray ray, Wall wall);
+  sf::Vector2f updateRay(sf::Vector2f &origin, sf::Vector2f &targetPoint,
+                         float offset);
 
   void onResize();
   void processEvents();
