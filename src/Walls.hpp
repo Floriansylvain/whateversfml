@@ -18,12 +18,14 @@ public:
 
   void add(sf::Vector2f pointA, sf::Vector2f pointB);
   std::vector<Wall> get();
+  std::vector<sf::Vector2f> getPoints();
 
   void render(sf::RenderWindow &window);
 
 private:
   sf::VertexArray walls;
   std::vector<Wall> vertices;
+  std::vector<sf::Vector2f> points;
 };
 
 #endif // WALLS_HPP
