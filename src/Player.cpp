@@ -1,0 +1,18 @@
+#include "Player.hpp"
+#include <SFML/Graphics/CircleShape.hpp>
+#include <SFML/Graphics/View.hpp>
+
+Player::Player(float size, sf::Color color) : circleShape(size) {
+  circleShape.setFillColor(color);
+}
+
+void Player::update(double dt, sf::RenderWindow &window, const sf::View &view) {
+  auto shapeRadius = circleShape.getRadius();
+  auto mousePos = sf::Mouse::getPosition(window);
+  auto mousePosWorld = window.mapPixelToCoords(mousePos, view);
+
+  circleShape.setPosition(
+      {mousePosWorld.x - shapeRadius, mousePosWorld.y - shapeRadius});
+};
+
+void Player::render(sf::RenderWindow &window) { window.draw(circleShape); };
