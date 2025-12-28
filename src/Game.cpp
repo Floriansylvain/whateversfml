@@ -1,13 +1,10 @@
 #include "Game.hpp"
+#include "Lighting.hpp"
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Window/Mouse.hpp>
-#include <algorithm>
-#include <cmath>
 
-Game::Game()
-    : gridLines(WIDTH, HEIGHT, 20.f), player(15.f, sf::Color::Green),
-      rayVertices(sf::PrimitiveType::TriangleFan) {
+Game::Game() : gridLines(WIDTH, HEIGHT, 20.f), player(15.f, sf::Color::Green) {
   window.create(sf::VideoMode({WIDTH, HEIGHT}), "SFML Game");
   window.setVerticalSyncEnabled(VSYNC);
 
@@ -17,8 +14,6 @@ Game::Game()
 
   worldView.setSize({(float)WIDTH, (float)HEIGHT});
   worldView.setCenter({(float)WIDTH / 2.f, (float)HEIGHT / 2.f});
-
-  lightColor = sf::Color(255, 255, 150, 50);
 }
 
 void Game::run() {
@@ -61,80 +56,10 @@ void Game::processEvents() {
   };
 };
 
-float Game::intersects(Ray ray, Wall wall) {
-  auto wallVector = wall.end - wall.start;
-  auto determinator =
-      (ray.direction.x * wallVector.y) - (ray.direction.y * wallVector.x);
-
-  if (determinator == 0)
-    return INFINITY;
-
-  auto rayDist = ((wall.start.x - ray.origin.x) * wallVector.y -
-                  (wall.start.y - ray.origin.y) * wallVector.x);
-  rayDist /= determinator;
-
-  auto wallDist = (wall.start.x - ray.origin.x) * ray.direction.y -
-                  (wall.start.y - ray.origin.y) * ray.direction.x;
-  wallDist /= determinator;
-
-  if (rayDist > 0 && wallDist >= 0 && wallDist <= 1) {
-    return rayDist;
-  }
-
-  return INFINITY;
-};
-
-sf::Vector2f Game::updateRay(sf::Vector2f &origin, sf::Vector2f &targetPoint,
-                             float offset) {
-  auto closestDist = 1.0f;
-  auto maxDist = 3000.0f;
-
-  float angle =
-      std::atan2(targetPoint.y - origin.y, targetPoint.x - origin.x) + offset;
-
-  sf::Vector2f direction = {std::cos(angle) * maxDist,
-                            std::sin(angle) * maxDist};
-  Ray ray = {origin, direction};
-
-  for (Wall wall : walls.get()) {
-    auto rayDist = intersects(ray, wall);
-    if (rayDist < closestDist) {
-      closestDist = rayDist;
-    };
-  }
-
-  return ray.origin + (ray.direction * closestDist);
-}
-
 void Game::update(double dt) {
   debug.update(dt);
   player.update(dt, window, worldView);
-
-  // INIT/UPDATE RAYS ------------------------------------------
-  sf::Vector2 playerPosition = player.position;
-  rayVertices.clear();
-  hitPoints.clear();
-
-  for (sf::Vector2 targetPoint : walls.getPoints()) {
-    hitPoints.emplace_back(updateRay(playerPosition, targetPoint, 0.f));
-    hitPoints.emplace_back(updateRay(playerPosition, targetPoint, 0.001f));
-    hitPoints.emplace_back(updateRay(playerPosition, targetPoint, -0.001f));
-  }
-  std::sort(hitPoints.begin(), hitPoints.end(),
-            [playerPosition](sf::Vector2f a, sf::Vector2f b) -> bool {
-              auto angleA =
-                  atan2(playerPosition.y - a.y, playerPosition.x - a.x);
-              auto angleB =
-                  atan2(playerPosition.y - b.y, playerPosition.x - b.x);
-              return angleA < angleB;
-            });
-
-  rayVertices.append({playerPosition, lightColor});
-  for (auto hitPoint : hitPoints) {
-    rayVertices.append({hitPoint, lightColor});
-  }
-  rayVertices.append({hitPoints[0], lightColor});
-  // -----------------------------------------------------------
+  lighting.update(dt, player.position, walls);
 };
 
 void Game::render() {
@@ -145,10 +70,7 @@ void Game::render() {
   debug.render(window);
   player.render(window);
   walls.render(window);
-
-  // RENDER RAYS -------
-  window.draw(rayVertices);
-  // -----------------
+  lighting.render(window);
 
   window.display();
 };

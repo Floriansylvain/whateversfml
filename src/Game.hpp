@@ -9,6 +9,7 @@
 
 #include "DebugUI.hpp"
 #include "GridLines.hpp"
+#include "Lighting.hpp"
 #include "Player.hpp"
 #include "Walls.hpp"
 
@@ -17,11 +18,6 @@ constexpr int WIDTH = 1920;
 constexpr int HEIGHT = 1080;
 constexpr int DEBUG_REFRESH_RATE_IN_MS = 250;
 constexpr float ASPECT = 16.f / 9.f;
-
-struct Ray {
-  sf::Vector2f origin;
-  sf::Vector2f direction;
-};
 
 class Game {
 public:
@@ -36,14 +32,7 @@ private:
   DebugUI debug;
   GridLines gridLines;
   Walls walls;
-
-  sf::VertexArray rayVertices;
-  std::vector<sf::Vector2f> hitPoints;
-  sf::Color lightColor;
-
-  float intersects(Ray ray, Wall wall);
-  sf::Vector2f updateRay(sf::Vector2f &origin, sf::Vector2f &targetPoint,
-                         float offset);
+  Lighting lighting;
 
   void onResize();
   void processEvents();
