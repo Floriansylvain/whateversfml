@@ -6,6 +6,7 @@
 #include "DebugUI.hpp"
 #include "GridLines.hpp"
 #include "Player.hpp"
+#include "Walls.hpp"
 
 constexpr bool VSYNC = true;
 constexpr int WIDTH = 1920;
@@ -25,6 +26,7 @@ private:
   Player player;
   DebugUI debug;
   GridLines gridLines;
+  Walls walls;
 
   void onResize();
   void processEvents();

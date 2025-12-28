@@ -11,7 +11,7 @@ public:
   void render(sf::RenderWindow &window) const;
 
 private:
-  sf::VertexArray m_lines;
+  sf::VertexArray lines;
 };
 
 #endif // GRIDLINES_HPP

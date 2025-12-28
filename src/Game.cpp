@@ -10,6 +10,17 @@ Game::Game() : gridLines(WIDTH, HEIGHT, 20.f), player(15.f, sf::Color::Green) {
 
   worldView.setSize({(float)WIDTH, (float)HEIGHT});
   worldView.setCenter({(float)WIDTH / 2.f, (float)HEIGHT / 2.f});
+
+  walls.add({1.f, 1.f}, {WIDTH - 1.f, 1.f});
+  walls.add({1.f, 1.f}, {1.f, HEIGHT - 1.f});
+  walls.add({WIDTH - 1.f, 1.f}, {WIDTH - 1.f, HEIGHT - 1.f});
+  walls.add({1.f, HEIGHT - 1.f}, {WIDTH - 1.f, HEIGHT - 1.f});
+
+  walls.add({1000.f, 500.f}, {1500.f, 500.f});
+  walls.add({500.f, 240.f}, {500.f, 760.f});
+  walls.add({420.f, 240.f}, {420.f, 760.f});
+  walls.add({420.f, 240.f}, {500.f, 240.f});
+  walls.add({420.f, 760.f}, {500.f, 760.f});
 }
 
 void Game::run() {
@@ -64,6 +75,7 @@ void Game::render() {
   gridLines.render(window);
   debug.render(window);
   player.render(window);
+  walls.render(window);
 
   window.display();
 };
